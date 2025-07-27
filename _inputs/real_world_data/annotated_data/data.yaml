@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 3
+names: ['bird', 'cactus', 'dino']
+
+roboflow:
+  workspace: cvai-o6ibx
+  project: cv_foundry_dino_game-slaba
+  version: 2
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/cvai-o6ibx/cv_foundry_dino_game-slaba/dataset/2

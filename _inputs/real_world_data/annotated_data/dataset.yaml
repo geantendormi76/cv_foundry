@@ -1,0 +1,8 @@
+path: /home/zhz/cv_foundry/_inputs/real_world_data/annotated_data
+train: train/images
+val: valid/images
+names:
+  0: bird
+  1: cactus
+  2: dino
+test: test/images

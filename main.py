@@ -1,89 +1,82 @@
-# cv_foundry/main.py (V2 - 适配新架构)
+# main.py 
 
 import argparse
 import importlib
 import sys
 from pathlib import Path
 
-# --- V2 核心改动 ---
-# 将核心库目录添加到Python路径中
-# 这使得我们可以使用 "from cv_foundry_lib.engine import ..." 这样的绝对导入
-project_root = Path(__file__).resolve().parent
-sys.path.append(str(project_root))
-# --- 改动结束 ---
-
+# 将 cv_foundry_lib 添加到 Python 的模块搜索路径中
+# 这允许我们无论在哪个目录下运行 main.py 都能找到我们的库
+lib_path = Path(__file__).parent / "cv_foundry_lib"
+sys.path.insert(0, str(lib_path))
 
 def main():
-    """CV_Foundry 模型的统一铸造入口。"""
+    """CV_Foundry 框架的主入口和命令行接口。"""
+    
+    # 1. 设置命令行参数解析器
     parser = argparse.ArgumentParser(
-        description="CV_Foundry: 一个蓝图驱动的微型视觉模型铸造厂。",
-        formatter_class=argparse.RawTextHelpFormatter
+        description="CV_Foundry: 一个蓝图驱动的计算机视觉模型铸造厂。",
+        formatter_class=argparse.RawTextHelpFormatter # 保持帮助信息中的换行格式
     )
     
     parser.add_argument(
-        "--blueprint",
+        "-b", "--blueprint",
+        type=str,
         required=True,
-        help="指定要操作的蓝图名称 (e.g., dino_game)"
+        help="指定要使用的蓝图名称 (例如: 'dino_game')"
     )
     
     parser.add_argument(
-        "--step",
+        "-s", "--step",
+        type=str,
         required=True,
-        choices=["synthesize", "train", "export", "all"],
-        help="""要执行的铸造步骤:
-  - synthesize: 仅生成数据集
-  - train:      仅训练模型 (需要已生成的数据集)
-  - export:     仅将.pt模型导出为.onnx (需要已训练的模型)
-  - all:        按顺序执行以上所有步骤"""
+        choices=['synthesize', 'pretrain', 'finetune', 'export', 'all'],
+        help="""选择要执行的铸造步骤:
+  - synthesize: (重新)生成合成数据
+  - pretrain:   使用合成数据进行预训练
+  - finetune:   使用真实数据进行微调
+  - export:     导出最终的微调模型为ONNX
+  - all:        执行从合成到导出的所有步骤"""
     )
-    
+
     args = parser.parse_args()
-    
-    print(f"\n{'='*20} 正在初始化 CV_Foundry {'='*20}")
-    print(f"  > 目标蓝图: {args.blueprint}")
-    print(f"  > 执行步骤: {args.step}")
-    
+
+    # 2. 动态加载指定的蓝图配置模块
+    blueprint_name = args.blueprint
     try:
-        # --- V2 核心改动 ---
-        # 更新config模块的导入路径
-        config_module = importlib.import_module(f"cv_foundry_lib.blueprints.{args.blueprint}.config")
-        print("  > 成功加载蓝图配置。")
+        # 动态导入类似 'blueprints.dino_game.config' 的模块
+        config_module_path = f"blueprints.{blueprint_name}.config"
+        config_module = importlib.import_module(config_module_path)
+        print(f"✅ 成功加载蓝图: {blueprint_name}")
     except ImportError:
-        print(f"\n[致命错误] 无法找到蓝图 '{args.blueprint}'。")
-        print(f"请确保 'cv_foundry_lib/blueprints/{args.blueprint}/' 目录和 'config.py' 文件存在。")
+        print(f"[致命错误] 找不到指定的蓝图 '{blueprint_name}'。")
+        print(f"  请确保 'cv_foundry_lib/blueprints/{blueprint_name}/' 目录和 config.py 文件存在。")
         sys.exit(1)
 
-    # --- 调度引擎模块 (V2) ---
+    # 3. 根据步骤参数，调用相应的引擎模块
+    step = args.step
     
-    if args.step in ["synthesize", "all"]:
-        try:
-            # 更新引擎模块的导入路径
-            from cv_foundry_lib.engine import data_synthesizer
-            data_synthesizer.run(config_module)
-        except Exception as e:
-            print(f"\n[致命错误] 数据合成步骤失败: {e}")
-            sys.exit(1)
+    if step in ['synthesize', 'all']:
+        from foundry_engine import data_synthesizer
+        data_synthesizer.run(config_module)
 
-    if args.step in ["train", "all"]:
-        try:
-            # 更新引擎模块的导入路径
-            from cv_foundry_lib.engine import trainer
-            trainer.run(config_module)
-        except Exception as e:
-            print(f"\n[致命错误] 模型训练步骤失败: {e}")
-            sys.exit(1)
+    # [新] 处理 pretrain
+    if step in ['pretrain', 'all']:
+        from foundry_engine import trainer
+        trainer.run(config_module, training_mode='pretrain')
 
-    if args.step in ["export", "all"]:
-        try:
-            # 更新引擎模块的导入路径
-            from cv_foundry_lib.engine import exporter
-            exporter.run(config_module)
-        except Exception as e:
-            print(f"\n[致命错误] 模型导出步骤失败: {e}")
-            sys.exit(1)
+    # [新] 处理 finetune
+    if step in ['finetune', 'all']:
+        from foundry_engine import trainer
+        trainer.run(config_module, training_mode='finetune')
 
-    print(f"\n{'='*20} CV_Foundry 任务 '{args.step}' 执行完毕 {'='*20}")
+    if step in ['export', 'all']:
+        from foundry_engine import exporter
+        # [修改] 导出器现在需要知道导出的源是微调模型
+        # (我们需要对exporter.py做个小修改)
+        exporter.run(config_module, source_model='finetune')
 
+    print(f"\n🎉 蓝图 '{blueprint_name}' 的步骤 '{step}' 已成功执行完毕！")
 
 if __name__ == "__main__":
     main()

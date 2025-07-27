@@ -1,4 +1,4 @@
-# cv_foundry/utils/keyboard_controller.py
+# utils/keyboard_controller.py (功能升级版)
 
 import time
 from pynput.keyboard import Controller, Key
@@ -15,6 +15,7 @@ class KeyboardController:
         time.sleep(duration)
         self.keyboard.release(Key.space)
 
+    # [新] 添加 duck 方法
     def duck(self, duration=0.3):
         """模拟一次下蹲动作（按下并松开下箭头键）。"""
         self.keyboard.press(Key.down)
