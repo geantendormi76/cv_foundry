@@ -12,8 +12,8 @@
 1.  **下载项目:**
     打开你的终端或命令行工具，运行以下命令：
     ```bash
-    git clone https://github.com/your-username/CV_Foundry_Dino_Bot.git
-    cd CV_Foundry_Dino_Bot
+    git clone https://github.com/geantendormi76/cv_foundry.git
+    cd cv_foundry
     ```
 
 2.  **安装依赖:**

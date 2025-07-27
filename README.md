@@ -25,8 +25,8 @@
 
 1.  **克隆仓库:**
     ```bash
-    git clone https://github.com/your-username/CV_Foundry_Dino_Bot.git
-    cd CV_Foundry_Dino_Bot
+    git clone https://github.com/geantendormi76/cv_foundry.git
+    cd cv_foundry
     ```
 
 2.  **安装依赖:** (建议在Python虚拟环境中进行)
