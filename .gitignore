@@ -1,0 +1,26 @@
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+__pycache__/
+
+# Python virtual environment
+.venv/
+
+# ROS 2 Colcon workspace build artifacts
+build/
+install/
+log/
+sim_scripts/
+
+# Simulation scripts (as requested)
+sim_scripts/
+
+# Local assets (recommendation: provide download links instead)
+# assets/models/*.onnx
+# assets/videos/*.mp4
+
+# Python validation script
+validate_model.py

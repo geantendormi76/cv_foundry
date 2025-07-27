@@ -1,0 +1,22 @@
+# CV_Foundry 核心依赖 (V2 - 升级导出器依赖)
+
+# YOLOv8 框架
+ultralytics
+
+# ONNX 模型推理引擎 (Python版，用于部署前验证)
+onnxruntime
+
+# [新增] 显式指定ONNX和相关工具的版本
+# 这有助于解决常见的导出时内存错误
+onnx>=1.16.0
+onnxsim>=0.4.36
+
+# 屏幕截图
+mss
+
+# 键盘控制
+pynput
+
+# 图像处理和显示
+opencv-python
+Pillow-SIMD
